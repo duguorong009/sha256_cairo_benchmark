@@ -9,6 +9,7 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.uint256 import uint256_eq
 
+// ref: https://github.com/cartridge-gg/cairo-sha256/blob/main/tests/test_sha256.cairo#L13
 func main{output_ptr: felt*, range_check_ptr, bitwise_ptr: BitwiseBuiltin*}() {
     alloc_locals;
 
