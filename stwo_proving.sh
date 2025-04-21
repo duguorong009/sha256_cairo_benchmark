@@ -9,6 +9,7 @@ PROVER_DIR="$STWO_DIR/stwo_cairo_prover"
 
 SHA256_BENCHMARK_FILE="src/main.cairo"
 
+BUILD_DIR="build"
 COMPILED_FILE="build/main_compiled.json"
 TRACE_FILE="build/trace.bin"
 MEMORY_FILE="build/memory.bin"
@@ -16,7 +17,10 @@ PUB_INPUT="build/air_public_inputs.json"
 PRIV_INPUT="build/air_private_inputs.json"
 PROOF_FILE="build/proof.json"
 
-mkdir build
+if [ ! -d "$BUILD_DIR" ]; then
+  echo "Creating build directory..."
+  mkdir build
+fi
 
 # Step 0: Activate virtual environment
 source .venv/bin/activate
