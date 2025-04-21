@@ -8,6 +8,7 @@ STWO_DIR="stwo-cairo"
 PROVER_DIR="$STWO_DIR/stwo_cairo_prover"
 
 SHA256_BENCHMARK_FILE="src/main.cairo"
+INPUT_FILE="src/input0.json"
 
 BUILD_DIR="build"
 COMPILED_FILE="build/main_compiled.json"
@@ -32,6 +33,7 @@ cairo-compile $SHA256_BENCHMARK_FILE --output $COMPILED_FILE --proof_mode
 # Step 2: Run the program and generate execution trace
 echo "Running the Cairo program..."
 cairo-run --program=$COMPILED_FILE \
+          --program_input=$INPUT_FILE \
           --layout=starknet \
           --trace_file=$TRACE_FILE \
           --memory_file=$MEMORY_FILE \
