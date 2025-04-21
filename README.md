@@ -17,3 +17,7 @@ chmod +x setup.sh
 chmod +x stwo_proving.sh
 ./stwo_proving.sh
 ```
+## References
+- https://github.com/cartridge-gg/cairo-sha256
+- https://github.com/starkware-libs/stwo-cairo?tab=readme-ov-file#using-stwo-to-prove-cairo-programs
+- https://docs.cairo-lang.org/cairozero/quickstart.html
