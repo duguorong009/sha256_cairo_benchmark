@@ -76,14 +76,23 @@ fi
 
 # Step 4: Generate STARK proof using Stwo
 echo "Generating STARK proof with Stwo..."
-cd $PROVER_DIR
+
+ADAPTED_STWO_BIN="$PROVER_DIR/target/release/adapted_stwo"
+if [ ! -f "$ADAPTED_STWO_BIN" ]; then
+  echo "Building adapted_stwo..."
+  cd $PROVER_DIR
+  cargo build --release
+  cd -
+else
+  echo "adapted_stwo binary already exists. Skipping build."
+fi
+
 START_TIME=$(date +%s)
-/usr/bin/time -l cargo run --bin adapted_stwo --release -- \
-  --pub_json ../../$PUB_INPUT \
-  --priv_json ../../$PRIV_INPUT \
-  --proof_path ../../$PROOF_FILE 2> ../../prove_metrics.txt
+/usr/bin/time -l "$ADAPTED_STWO_BIN" \
+  --pub_json $PUB_INPUT \
+  --priv_json $PRIV_INPUT \
+  --proof_path $PROOF_FILE 2> prove_metrics.txt
 END_TIME=$(date +%s)
-cd -
 
 # Calculate proof generation time
 PROVE_TIME=$((END_TIME - START_TIME))
