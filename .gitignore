@@ -6,3 +6,6 @@ build/
 
 # Ignore the stw-cairo directory entirely
 stwo-cairo/
+
+# Ignore any txt file
+*.txt

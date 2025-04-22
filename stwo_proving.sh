@@ -19,6 +19,30 @@ PUB_INPUT="build/air_public_inputs.json"
 PRIV_INPUT="build/air_private_inputs.json"
 PROOF_FILE="build/proof.json"
 
+# Function to convert bytes to human-readable format
+bytes_to_human() {
+  local bytes=$1
+  local kib=$((1024))
+  local mib=$((1024 * kib))
+  local gib=$((1024 * mib))
+
+  if (( bytes >= gib )); then
+    printf "%.2f GiB" "$(echo "$bytes / $gib" | bc -l)"
+  elif (( bytes >= mib )); then
+    printf "%.2f MiB" "$(echo "$bytes / $mib" | bc -l)"
+  elif (( bytes >= kib )); then
+    printf "%.2f KiB" "$(echo "$bytes / $kib" | bc -l)"
+  else
+    printf "%d B" "$bytes"
+  fi
+}
+
+# Function to measure memory usage of a command
+measure_memory() {
+  /usr/bin/time -l "$@" 2>&1 | awk '/maximum resident set size/ {print $1}'
+}
+
+# Create "build" directory
 if [ ! -d "$BUILD_DIR" ]; then
   echo "Creating build directory..."
   mkdir build
@@ -29,20 +53,22 @@ source .venv/bin/activate
 
 # Step 1: Compile the Cairo program
 echo "Compiling $SHA256_BENCHMARK_FILE..."
-cairo-compile $SHA256_BENCHMARK_FILE --output $COMPILED_FILE --proof_mode
+COMPILE_MEM=$(measure_memory cairo-compile $SHA256_BENCHMARK_FILE --output $COMPILED_FILE --proof_mode)
+echo "Compilation memory usage: $(bytes_to_human $COMPILE_MEM)"
 
 # Step 2: Run the program and generate execution trace
 echo "Running the Cairo program..."
-cairo-run --program=$COMPILED_FILE \
+RUN_MEM=$(measure_memory cairo-run --program=$COMPILED_FILE \
           --program_input=$INPUT_FILE \
           --layout=starknet \
           --trace_file=$TRACE_FILE \
           --memory_file=$MEMORY_FILE \
           --air_public_input=$PUB_INPUT \
           --air_private_input=$PRIV_INPUT \
-          --proof_mode
+          --proof_mode)
+echo "Execution memory usage: $(bytes_to_human $RUN_MEM)"
 
-# Step 3: Clone stwo-cairo repository
+# Step 3: Clone stwo-cairo repository if not present
 if [ ! -d "$STWO_DIR" ]; then
   echo "Cloning stwo-cairo repository..."
   git clone $STWO_REPO
@@ -51,9 +77,48 @@ fi
 # Step 4: Generate STARK proof using Stwo
 echo "Generating STARK proof with Stwo..."
 cd $PROVER_DIR
-cargo run --bin adapted_stwo --release -- \
+START_TIME=$(date +%s)
+/usr/bin/time -l cargo run --bin adapted_stwo --release -- \
   --pub_json ../../$PUB_INPUT \
   --priv_json ../../$PRIV_INPUT \
-  --proof_path ../../$PROOF_FILE
+  --proof_path ../../$PROOF_FILE 2> ../../prove_metrics.txt
+END_TIME=$(date +%s)
+cd -
 
-echo "Proving completed. Proof saved to $PROOF_FILE"
+# Calculate proof generation time
+PROVE_TIME=$((END_TIME - START_TIME))
+echo "Proof generation time: $PROVE_TIME seconds"
+
+# Extract memory usage during proof generation
+PROVE_MEM=$(awk '/maximum resident set size/ {print $1}' prove_metrics.txt)
+echo "Proof generation memory usage: $(bytes_to_human $PROVE_MEM)"
+
+# Step 5: Output performance metrics
+echo "=== Performance Metrics ==="
+
+# Proof size
+PROOF_SIZE=$(stat -f%z $PROOF_FILE)
+echo "Proof size: $PROOF_SIZE bytes"
+
+# Total size of data needed for proof generation
+DATA_SIZE=$(du -ck $TRACE_FILE $MEMORY_FILE $PUB_INPUT $PRIV_INPUT | grep total | awk '{print $1}')
+echo "Total data size for proof generation: $DATA_SIZE KB"
+
+# Extract Peak Memory Footprint (in bytes)
+PEAK_MEM_BYTES=$(awk '/peak memory footprint/ {print $1}' prove_metrics.txt)
+
+# Convert and display the memory metrics
+echo "Peak Memory Footprint: $(bytes_to_human $PEAK_MEM_BYTES)"
+
+# Summary
+echo "--- Summary ---"
+echo "Compilation(cairo-compile) memory usage: $(bytes_to_human $COMPILE_MEM)"
+echo "Execution(cairo-run) memory usage: $(bytes_to_human $RUN_MEM)"
+echo "Total data size for proof generation: $DATA_SIZE KB"
+
+echo "STWO proof generation time: $PROVE_TIME seconds"
+echo "STWO proof generation memory usage: $(bytes_to_human $PROVE_MEM)"
+echo "STWO proof size: $(bytes_to_human $PROOF_SIZE)"
+
+# Clean up metric files if desired
+# rm prove_metrics.txt
