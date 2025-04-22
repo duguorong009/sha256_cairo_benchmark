@@ -21,3 +21,7 @@ chmod +x stwo_proving.sh
 - https://github.com/cartridge-gg/cairo-sha256
 - https://github.com/starkware-libs/stwo-cairo?tab=readme-ov-file#using-stwo-to-prove-cairo-programs
 - https://docs.cairo-lang.org/cairozero/quickstart.html
+
+## NOTE
+1. Current sh scripts show correct performance metrics in only MacOS, not in ubuntu/linux.(Reason: `/usr/bin/time` util)
+2. `stwo_verify.sh` file is not working atm. It outputs some weird error when verifying.
