@@ -8,8 +8,6 @@ STWO_DIR="stwo-cairo"
 PROVER_DIR="$STWO_DIR/stwo_cairo_prover"
 
 SHA256_BENCHMARK_FILE="src/main.cairo"
-# INPUT_FILE="src/input0.json" # "hello world" string
-INPUT_FILE="src/input1.json" # random string of 2048 bytes(2KB)
 
 BUILD_DIR="build"
 COMPILED_FILE="build/main_compiled.json"
@@ -59,7 +57,6 @@ echo "Compilation memory usage: $(bytes_to_human $COMPILE_MEM)"
 # Step 2: Run the program and generate execution trace
 echo "Running the Cairo program..."
 RUN_MEM=$(measure_memory cairo-run --program=$COMPILED_FILE \
-          --program_input=$INPUT_FILE \
           --layout=starknet \
           --trace_file=$TRACE_FILE \
           --memory_file=$MEMORY_FILE \
