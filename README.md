@@ -1,4 +1,4 @@
-# Sha256 hash funcion(cairo) benchmark
+# Sha256 hash benchmark with STWO prover and Cairolang
 
 ## How to run
 1. Install the [`uv`](https://github.com/astral-sh/uv) tool
