@@ -38,11 +38,12 @@ else
 fi
 
 START_TIME=$(date +%s)
-/usr/bin/time -l "$ADAPTED_STWO_BIN" \
+/usr/bin/time -l -o verify_metrics.txt \
+  "$ADAPTED_STWO_BIN" \
   --pub_json $PUB_INPUT \
   --priv_json $PRIV_INPUT \
   --proof_path $PROOF_FILE \
-  --verify 2> verify_metrics.txt
+  --verify
 END_TIME=$(date +%s)
 
 # Calculate proof verification time
