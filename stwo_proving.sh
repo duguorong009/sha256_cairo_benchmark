@@ -88,10 +88,11 @@ else
 fi
 
 START_TIME=$(date +%s)
-/usr/bin/time -l "$ADAPTED_STWO_BIN" \
+/usr/bin/time -l -o prove_metrics.txt \
+  "$ADAPTED_STWO_BIN" \
   --pub_json $PUB_INPUT \
   --priv_json $PRIV_INPUT \
-  --proof_path $PROOF_FILE 2> prove_metrics.txt
+  --proof_path $PROOF_FILE 
 END_TIME=$(date +%s)
 
 # Calculate proof generation time
